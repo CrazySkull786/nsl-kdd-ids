@@ -1,5 +1,5 @@
 # train.py - Usage: python train.py [logistic|forest|xgboost]
-import sys, hashlib
+import sys, json, hashlib
 import pandas as pd
 import joblib
 import mlflow
@@ -12,22 +12,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import f1_score, recall_score, precision_score, roc_auc_score, accuracy_score
+from schema import COLS
 
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
 mlflow.set_experiment("intrusion-detection")
 model_type = sys.argv[1] if len(sys.argv) > 1 else "logistic"
 SEED = 42
-
-COLS = ["duration","protocol_type","service","flag","src_bytes","dst_bytes","land",
- "wrong_fragment","urgent","hot","num_failed_logins","logged_in","num_compromised",
- "root_shell","su_attempted","num_root","num_file_creations","num_shells",
- "num_access_files","num_outbound_cmds","is_host_login","is_guest_login","count",
- "srv_count","serror_rate","srv_serror_rate","rerror_rate","srv_rerror_rate",
- "same_srv_rate","diff_srv_rate","srv_diff_host_rate","dst_host_count",
- "dst_host_srv_count","dst_host_same_srv_rate","dst_host_diff_srv_rate",
- "dst_host_same_src_port_rate","dst_host_srv_diff_host_rate","dst_host_serror_rate",
- "dst_host_srv_serror_rate","dst_host_rerror_rate","dst_host_srv_rerror_rate",
- "label","difficulty"]
 
 def load(path):
     first = open(path).readline().split(",")[0].strip().lower()
@@ -81,6 +71,12 @@ with mlflow.start_run():
     mlflow.log_param("train_test_overlap_rows", overlap)
     for k, v in val.items():  mlflow.log_metric(f"val_{k}", v)
     for k, v in test.items(): mlflow.log_metric(f"test_{k}", v)
+
+    # Save the scores to a file so the CI quality gate can read them
+    with open("metrics.json", "w") as f:
+        json.dump({"val_f1": float(val["f1"]), "val_recall": float(val["recall"]),
+                   "test_f1": float(test["f1"]), "test_recall": float(test["recall"]),
+                   "test_roc_auc": float(test["roc_auc"])}, f)
 
     joblib.dump(model, "model.pkl")
     sha = hashlib.sha256(open("model.pkl", "rb").read()).hexdigest()   # tamper-proof fingerprint

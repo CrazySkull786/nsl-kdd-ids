@@ -2,6 +2,5 @@
     analytics = false
     remote = storage
 ['remote "storage"']
-    url = s3://sabeela-ids-mlops-2026
-    profile = dvc
+    url = s3://sabeela-ids-mlops-2026/dvc
     region = us-east-1

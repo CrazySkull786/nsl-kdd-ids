@@ -1,0 +1,16 @@
+data
+.venv
+mlflow.db
+mlruns
+model.pkl
+model.pkl.sha256
+.git
+.dvc
+*.dvc
+.env
+tests
+.github
+metrics.json
+requirements-full.txt
+requirements-dev.txt
+__pycache__
