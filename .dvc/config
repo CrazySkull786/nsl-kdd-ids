@@ -1,0 +1,7 @@
+[core]
+    analytics = false
+    remote = storage
+['remote "storage"']
+    url = s3://sabeela-ids-mlops-2026
+    profile = dvc
+    region = us-east-1

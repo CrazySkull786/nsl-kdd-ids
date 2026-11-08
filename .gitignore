@@ -1,0 +1,8 @@
+.venv/
+mlruns/
+mlflow.db
+model.pkl
+model.pkl.sha256
+__pycache__/
+.env
+*.pem
